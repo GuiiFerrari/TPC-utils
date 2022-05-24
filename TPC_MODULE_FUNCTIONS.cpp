@@ -413,7 +413,7 @@ void Fit3D2(std::vector<double>& vX, std::vector<double>& vY, std::vector<double
 	Pb[2] = Zm;
 }
 
-void Ransac_4_RF(std::vector<std::vector<double>>& data, PyObject* PyInliers, PyObject* PyVersors, PyObject* PyPoints, std::vector<double>& charge, int number_it, double min_dist, int mode, int min_inlier){
+void pRansac(std::vector<std::vector<double>>& data, PyObject* PyInliers, PyObject* PyVersors, PyObject* PyPoints, std::vector<double>& charge, int number_it, double min_dist, int mode, int min_inlier){
 	// std::cout<< "Entrou ransac\n";
 	int indice1, indice2, loop, j, size = data.size(), num_inliers_1 = 0;
 	std::vector <int> parcial;
@@ -591,7 +591,7 @@ static PyObject* Ransac(PyObject* self, PyObject* args){
 	PyObject* PyInliers = PyList_New(0);
 	PyObject* PyVersor  = PyList_New(0);
 	PyObject* PyPb      = PyList_New(0);
-	Ransac_4_RF(data, PyInliers, PyVersor, PyPb, charge, number_it, min_dist, mode, min_inliers);
+	pRansac(data, PyInliers, PyVersor, PyPb, charge, number_it, min_dist, mode, min_inliers);
 	PyObject * NPInliers;
 	if(PyList_Size(PyInliers) == 1) NPInliers = PyArray_FROM_OTF(PyInliers, NPY_INT, NPY_ARRAY_IN_ARRAY);
 	else NPInliers = PyArray_FROM_OTF(PyInliers, NPY_OBJECT, NPY_ARRAY_IN_ARRAY);
