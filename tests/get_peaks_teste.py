@@ -2,20 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tpc_utils import get_peaks
 from time import time
-
-"""
-TODO: 
-    - Implementar a função get_peaks."""
+import os
 
 
-def carrega_e_roda():
-    arrays = np.load("./data/arrays.npz", allow_pickle=True)
+def carrega_e_roda(PATH: str):
+    arrays = np.load(os.path.join(PATH, "arrays.npz"), allow_pickle=True)
     t0 = time()
     arrays_a = arrays["arr_0"].astype(float)
     del arrays
-    picos = tpc.get_peaks(arrays_a)
-    print(f"Tempo consumido = {time() - t0} segundos.")
-    np.save("picos.npy", picos)
+    picos = get_peaks(arrays_a)
+    print(f"Elapsed time = {time() - t0:.4f} segundos.")
+    np.save(os.path.join(PATH, "picos.npy"), picos)
 
 
 def load2():
@@ -31,5 +28,7 @@ def load2():
 
 
 if __name__ == "__main__":
-    carrega_e_roda()
-    load2()
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PATH = os.path.join(BASE_DIR, "..", "data")
+    carrega_e_roda(PATH)
+    # load2()
