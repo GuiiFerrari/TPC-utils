@@ -26,3 +26,28 @@ if __name__ == "__main__":
     plt.plot(xt, background_tpc, label="background_tpc_module", alpha=0.5, lw=2)
     plt.legend()
     plt.show()
+    nums = np.random.randint(0, len(raw_signals), size=5)
+    raw_signal = raw_signals[nums]
+    baseline = baselines_root[nums]
+    background_tpc = background(raw_signal, 24, 1, 0, True, 3, True)
+    print(np.array_equal(baseline, background_tpc))
+    for num in range(5):
+        fig = plt.figure(dpi=150)
+        plt.plot(xt, raw_signal[num], label="raw signal", lw=2)
+        plt.plot(
+            xt,
+            baseline[num],
+            label="baseline_tspectrum",
+            ls="--",
+            alpha=0.5,
+            lw=2,
+        )
+        plt.plot(
+            xt,
+            background_tpc[num],
+            label="background_tpc_module",
+            alpha=0.5,
+            lw=2,
+        )
+        plt.legend()
+        plt.show()

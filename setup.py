@@ -17,7 +17,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="tpc_utils",
-    version="0.0.1",
+    version="0.0.2",
     author="Guilherme Ferrari Fortino",
     author_email="ferrarifortino@gmail.com",
     maintainer="Guilherme Ferrari Fortino",

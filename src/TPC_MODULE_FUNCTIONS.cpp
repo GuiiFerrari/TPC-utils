@@ -606,16 +606,16 @@ extern "C"
 	{
 		int i, j, w, bw, b1, b2, priz;
 		double a, b, c, d, e, yb1, yb2, ai, av, men, b4, c4, d4, e4, b6, c6, d6, e6, f6, g6, b8, c8, d8, e8, f8, g8, h8, i8;
-		if (ssize < 2 * numberIterations + 1)
-		{
-			// PyErr_SetString(PyExc_TypeError, "Too Large Clipping Window.");
-			return -1;
-		}
-		if (smoothing == true && smoothWindow != 3 && smoothWindow != 5 && smoothWindow != 7 && smoothWindow != 9 && smoothWindow != 11 && smoothWindow != 13 && smoothWindow != 15)
-		{
-			// PyErr_SetString(PyExc_TypeError, "Incorrect width of smoothing window");
-			return -2;
-		}
+		// if (ssize < 2 * numberIterations + 1)
+		// {
+		// 	// PyErr_SetString(PyExc_TypeError, "Too Large Clipping Window.");
+		// 	return -1;
+		// }
+		// if (smoothing == true && smoothWindow != 3 && smoothWindow != 5 && smoothWindow != 7 && smoothWindow != 9 && smoothWindow != 11 && smoothWindow != 13 && smoothWindow != 15)
+		// {
+		// 	// PyErr_SetString(PyExc_TypeError, "Incorrect width of smoothing window");
+		// 	return -2;
+		// }
 		double *working_space = new double[2 * ssize];
 		for (i = 0; i < ssize; i++)
 		{
@@ -1380,29 +1380,29 @@ extern "C"
 		// double *fPositionX = (double *)calloc(ssize, sizeof(double));
 
 		j = (int)(5.0 * sigma + 0.5);
-		if (j >= 1024 / 2)
-		{
-			// Error("SearchHighRes", "Too large sigma");
-			return -1;
-		}
+		// if (j >= 1024 / 2)
+		// {
+		// 	// Error("SearchHighRes", "Too large sigma");
+		// 	return -1;
+		// }
 
-		if (markov == true)
-		{
-			if (averWindow <= 0)
-			{
-				// Error("SearchHighRes", "Averanging window must be positive");
-				return -2;
-			}
-		}
+		// if (markov == true)
+		// {
+		// 	if (averWindow <= 0)
+		// 	{
+		// 		// Error("SearchHighRes", "Averanging window must be positive");
+		// 		return -2;
+		// 	}
+		// }
 
-		if (backgroundRemove == true)
-		{
-			if (ssize < 2 * numberIterations + 1)
-			{
-				// Error("SearchHighRes", "Too large clipping window");
-				return -3;
-			}
-		}
+		// if (backgroundRemove == true)
+		// {
+		// 	if (ssize < 2 * numberIterations + 1)
+		// 	{
+		// 		// Error("SearchHighRes", "Too large clipping window");
+		// 		return -3;
+		// 	}
+		// }
 
 		k = int(2 * sigma + 0.5);
 		if (k >= 2)
@@ -1995,7 +1995,6 @@ extern "C"
 		PyArrayObject *p;
 		int number_it, direction, filter_order, smooth_window;
 		bool smoothing, compton;
-		NpyIter *in_iter;
 		if (!PyArg_ParseTuple(args, "O!iiibib", &PyArray_Type, &p, &number_it, &direction, &filter_order, &smoothing, &smooth_window, &compton))
 			return NULL;
 		if (PyArray_DESCR(p)->type_num != NPY_DOUBLE)
@@ -2003,47 +2002,103 @@ extern "C"
 			PyErr_SetString(PyExc_TypeError, "Type np.float64 expected for array.");
 			return NULL;
 		}
-		if (PyArray_NDIM(p) > 1)
+		if (PyArray_NDIM(p) > 2)
 		{
-			PyErr_SetString(PyExc_TypeError, "Array must be 1 dimensional.");
+			PyErr_SetString(PyExc_TypeError, "Array must be 1 or 2 dimensional.");
 			return NULL;
 		}
-		int size = PyArray_DIM(p, 0);
-		if (size < 1)
+		if (smoothing == true && smooth_window % 2 == 0 && smooth_window > 16)
 		{
-			PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+			PyErr_SetString(PyExc_TypeError, "Incorrect width of smoothing window.");
 			return NULL;
 		}
-		in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
-		double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
-		NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
-		double *spectrum = new double[size];
-		for (int i = 0; i < size; i++)
+		if (PyArray_NDIM(p) == 1)
 		{
-			spectrum[i] = **in_dataptr;
-			in_iternext(in_iter);
-		}
-		NpyIter_Deallocate(in_iter);
-		int res = Background_root(spectrum, size, number_it, direction, filter_order, smoothing, smooth_window, compton);
-		if (res < 0)
-		{
-			if (res == -1)
+			int size = PyArray_DIM(p, 0);
+			if (size < 1)
+			{
+				PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+				return NULL;
+			}
+			if (size < 2 * number_it + 1)
 			{
 				PyErr_SetString(PyExc_TypeError, "Too Large Clipping Window.");
 				return NULL;
 			}
-			PyErr_SetString(PyExc_TypeError, "Incorrect width of smoothing window.");
-			return NULL;
+			NpyIter *in_iter;
+			in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+			double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
+			NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
+			double *spectrum = new double[size];
+			for (int i = 0; i < size; i++)
+			{
+				spectrum[i] = **in_dataptr;
+				in_iternext(in_iter);
+			}
+			NpyIter_Deallocate(in_iter);
+			int res = Background_root(spectrum, size, number_it, direction, filter_order, smoothing, smooth_window, compton);
+			// if (res < 0)
+			// {
+			// 	if (res == -1)
+			// 	{
+			// 		PyErr_SetString(PyExc_TypeError, "Too Large Clipping Window.");
+			// 		return NULL;
+			// 	}
+			// 	PyErr_SetString(PyExc_TypeError, "Incorrect width of smoothing window.");
+			// 	return NULL;
+			// }
+			PyObject *PySpectrum = PyList_New(size);
+			for (int i = 0; i < size; i++)
+			{
+				PyList_SetItem(PySpectrum, i, PyFloat_FromDouble(spectrum[i]));
+			}
+			delete[] spectrum;
+			PyObject *PySpectrum_np = PyArray_FROM_OTF(PySpectrum, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PySpectrum);
+			return Py_BuildValue("O", PySpectrum_np);
 		}
-		PyObject *PySpectrum = PyList_New(size);
-		for (int i = 0; i < size; i++)
+		else
 		{
-			PyList_SetItem(PySpectrum, i, PyFloat_FromDouble(spectrum[i]));
+			int rows = PyArray_DIM(p, 0);
+			int cols = PyArray_DIM(p, 1);
+			if (cols < 1)
+			{
+				PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+				return NULL;
+			}
+			if (cols < 2 * number_it + 1)
+			{
+				PyErr_SetString(PyExc_TypeError, "Too Large Clipping Window.");
+				return NULL;
+			}
+			NpyIter *in_iter;
+			in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+			double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
+			NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
+			double *spectrum = new double[cols];
+			PyObject *PySpectrum = PyList_New(rows);
+			for (int i = 0; i < rows; i++)
+			{
+				for (int j = 0; j < cols; j++)
+				{
+					spectrum[j] = **in_dataptr;
+					in_iternext(in_iter);
+				}
+				int res = Background_root(spectrum, cols, number_it, direction, filter_order, smoothing, smooth_window, compton);
+				PyObject *PySpectrum_p = PyList_New(cols);
+				for (int j = 0; j < cols; j++)
+				{
+					PyList_SetItem(PySpectrum_p, j, PyFloat_FromDouble(spectrum[j]));
+				}
+				PyList_SetItem(PySpectrum, i, PyArray_FROM_OTF(PySpectrum_p, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY));
+				// Py_DECREF(PySpectrum_p);
+			}
+			delete[] spectrum;
+			NpyIter_Deallocate(in_iter);
+			PyObject *PySpectrum_np = PyArray_FROM_OTF(PySpectrum, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PySpectrum);
+			return Py_BuildValue("O", PySpectrum_np);
 		}
-		delete[] spectrum;
-		PyObject *PySpectrum_np = PyArray_FROM_OTF(PySpectrum, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-		Py_DECREF(PySpectrum);
-		return Py_BuildValue("O", PySpectrum_np);
 	}
 
 	static PyObject *SearchHighRes(PyObject *self, PyObject *args)
@@ -2052,7 +2107,7 @@ extern "C"
 		int number_it, aver_window;
 		double sigma, threshold;
 		bool bkg_remove, markov;
-		NpyIter *in_iter;
+		// NpyIter *in_iter;
 		if (!PyArg_ParseTuple(args, "O!ddbibi", &PyArray_Type, &p, &sigma, &threshold, &bkg_remove, &number_it, &markov, &aver_window))
 			return NULL;
 		if (PyArray_DESCR(p)->type_num != NPY_DOUBLE)
@@ -2060,15 +2115,9 @@ extern "C"
 			PyErr_SetString(PyExc_TypeError, "Type np.float64 expected for array.");
 			return NULL;
 		}
-		if (PyArray_NDIM(p) > 1)
+		if (PyArray_NDIM(p) > 2)
 		{
-			PyErr_SetString(PyExc_TypeError, "Array must be 1 dimensional.");
-			return NULL;
-		}
-		int size = PyArray_DIM(p, 0);
-		if (size < 1)
-		{
-			PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+			PyErr_SetString(PyExc_TypeError, "Array must be 1 or 2 dimensional.");
 			return NULL;
 		}
 		if (sigma < 0)
@@ -2081,57 +2130,130 @@ extern "C"
 			PyErr_SetString(PyExc_TypeError, "Invalid threshold, must be greater than or equal to 0.");
 			return NULL;
 		}
-		in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
-		double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
-		NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
-		double *source = new double[size];
-		double *response = new double[size];
-		double *pos_peaks = new double[size];
-		for (int i = 0; i < size; i++)
+		if (markov == true)
 		{
-			source[i] = **in_dataptr;
-			in_iternext(in_iter);
-		}
-		NpyIter_Deallocate(in_iter);
-		int res = SearchHighRes_root(source, response, pos_peaks, size, sigma, threshold, bkg_remove, number_it, markov, aver_window);
-		if (res < 0)
-		{
-			if (res == -1)
-			{
-				PyErr_SetString(PyExc_TypeError, "Too large sigma.");
-				return NULL;
-			}
-			else if (res == -2)
+			if (aver_window <= 0)
 			{
 				PyErr_SetString(PyExc_TypeError, "Averanging window must be positive.");
 				return NULL;
 			}
-			PyErr_SetString(PyExc_TypeError, "Too large clipping window.");
+		}
+		if ((int)(5.0 * sigma + 0.5) >= 512)
+		{
+			PyErr_SetString(PyExc_TypeError, "Too large sigma.");
 			return NULL;
 		}
-		PyObject *PyResponse = PyList_New(size);
-		PyObject *PyPosPeaks = PyList_New(res);
-		for (int i = 0; i < size; i++)
+		if (PyArray_NDIM(p) == 1)
 		{
-			PyList_SetItem(PyResponse, i, PyFloat_FromDouble(response[i]));
+			int size = PyArray_DIM(p, 0);
+			if (size < 1)
+			{
+				PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+				return NULL;
+			}
+			if (bkg_remove == true)
+			{
+				if (size < 2 * number_it + 1)
+				{
+					PyErr_SetString(PyExc_TypeError, "Too large clipping window.");
+					return NULL;
+				}
+			}
+			NpyIter *in_iter;
+			in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+			double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
+			NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
+			double *source = new double[size];
+			double *response = new double[size];
+			double *pos_peaks = new double[size];
+			for (int i = 0; i < size; i++)
+			{
+				source[i] = **in_dataptr;
+				in_iternext(in_iter);
+			}
+			NpyIter_Deallocate(in_iter);
+			int res = SearchHighRes_root(source, response, pos_peaks, size, sigma, threshold, bkg_remove, number_it, markov, aver_window);
+			PyObject *PyResponse = PyList_New(size);
+			PyObject *PyPosPeaks = PyList_New(res);
+			for (int i = 0; i < size; i++)
+			{
+				PyList_SetItem(PyResponse, i, PyFloat_FromDouble(response[i]));
+			}
+			for (int i = 0; i < res; i++)
+			{
+				PyList_SetItem(PyPosPeaks, i, PyFloat_FromDouble(pos_peaks[i]));
+			}
+			delete[] source;
+			delete[] response;
+			delete[] pos_peaks;
+			PyObject *PyResponse_np = PyArray_FROM_OTF(PyResponse, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PyResponse);
+			PyObject *PyPosPeaks_np = PyArray_FROM_OTF(PyPosPeaks, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PyPosPeaks);
+			return Py_BuildValue("(OO)", PyResponse_np, PyPosPeaks_np);
 		}
-		for (int i = 0; i < res; i++)
+		else
 		{
-			PyList_SetItem(PyPosPeaks, i, PyFloat_FromDouble(pos_peaks[i]));
+			int rows = PyArray_DIM(p, 0);
+			int cols = PyArray_DIM(p, 1);
+			if (cols < 1)
+			{
+				PyErr_SetString(PyExc_TypeError, "Array must have at least one element.");
+				return NULL;
+			}
+			if (bkg_remove == true)
+			{
+				if (cols < 2 * number_it + 1)
+				{
+					PyErr_SetString(PyExc_TypeError, "Too large clipping window.");
+					return NULL;
+				}
+			}
+			NpyIter *in_iter;
+			in_iter = NpyIter_New(p, NPY_ITER_READONLY, NPY_KEEPORDER, NPY_NO_CASTING, NULL);
+			double **in_dataptr = (double **)NpyIter_GetDataPtrArray(in_iter);
+			NpyIter_IterNextFunc *in_iternext = NpyIter_GetIterNext(in_iter, NULL);
+			double *source = new double[cols];
+			double *response = new double[cols];
+			double *pos_peaks = new double[cols];
+			PyObject *PyResponse = PyList_New(rows);
+			PyObject *PyPosPeaks = PyList_New(rows);
+			for (int i = 0; i < rows; i++)
+			{
+				for (int j = 0; j < cols; j++)
+				{
+					source[j] = **in_dataptr;
+					in_iternext(in_iter);
+				}
+				int res = SearchHighRes_root(source, response, pos_peaks, cols, sigma, threshold, bkg_remove, number_it, markov, aver_window);
+				PyObject *PyResponse_p = PyList_New(cols);
+				PyObject *PyPosPeaks_p = PyList_New(res);
+				for (int k = 0; k < cols; k++)
+				{
+					PyList_SetItem(PyResponse_p, k, PyFloat_FromDouble(response[k]));
+				}
+				for (int k = 0; k < res; k++)
+				{
+					PyList_SetItem(PyPosPeaks_p, k, PyFloat_FromDouble(pos_peaks[k]));
+				}
+				PyList_SetItem(PyResponse, i, PyArray_FROM_OTF(PyResponse_p, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY));
+				PyList_SetItem(PyPosPeaks, i, PyArray_FROM_OTF(PyPosPeaks_p, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY));
+			}
+			NpyIter_Deallocate(in_iter);
+			delete[] source;
+			delete[] response;
+			delete[] pos_peaks;
+			PyObject *PyResponse_np = PyArray_FROM_OTF(PyResponse, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PyResponse);
+			PyObject *PyPosPeaks_np = PyArray_FROM_OTF(PyPosPeaks, NPY_OBJECT, NPY_ARRAY_IN_ARRAY);
+			Py_DECREF(PyPosPeaks);
+			return Py_BuildValue("(OO)", PyResponse_np, PyPosPeaks_np);
 		}
-		delete[] source;
-		delete[] response;
-		delete[] pos_peaks;
-		PyObject *PyResponse_np = PyArray_FROM_OTF(PyResponse, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-		Py_DECREF(PyResponse);
-		PyObject *PyPosPeaks_np = PyArray_FROM_OTF(PyPosPeaks, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-		Py_DECREF(PyPosPeaks);
-		return Py_BuildValue("(OO)", PyResponse_np, PyPosPeaks_np);
 	}
 
 	static PyObject *version(PyObject *self)
 	{
-		return Py_BuildValue("s", "0.1");
+		return Py_BuildValue("s", "0.0.2");
 	}
 
 	static PyObject *get_peaks(PyObject *self, PyObject *args)

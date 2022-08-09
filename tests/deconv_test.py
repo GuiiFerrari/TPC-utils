@@ -12,7 +12,7 @@ def load_data(path):
 if __name__ == "__main__":
     path = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(path, "..", "data")
-    raw_signals, _ = load_data(path)
+    raw_signals = load_data(path)
     num = np.random.randint(0, len(raw_signals), size=1)[0]
     raw_signal = raw_signals[num]
     deconv_tpc, peaks = search_high_res(
@@ -34,3 +34,30 @@ if __name__ == "__main__":
     )
     plt.legend()
     plt.show()
+    nums = np.random.randint(0, len(raw_signals), size=5)
+    raw_signal = raw_signals[nums]
+    deconv_tpc, peaks = search_high_res(
+        raw_signal, 5.0, 20.0, False, 700, False, 3
+    )
+    for num in range(5):
+        peaks_p = peaks[num].round().astype(int)
+        fig = plt.figure(dpi=150)
+        plt.plot(xt, raw_signal[num], label="raw signal", lw=2)
+        plt.plot(
+            xt,
+            deconv_tpc[num],
+            label="deconv_tpc_module",
+            alpha=0.5,
+            lw=2,
+        )
+        plt.scatter(
+            xt[peaks_p],
+            deconv_tpc[num][peaks_p],
+            marker="x",
+            label="peaks tpc_module",
+            alpha=1,
+            lw=2,
+            zorder=3,
+        )
+        plt.legend()
+        plt.show()
