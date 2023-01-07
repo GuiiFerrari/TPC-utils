@@ -20,7 +20,7 @@ def load2():
     picos = np.load("./data/picos.npy", allow_pickle=True)
     xt = np.arange(0.5, 512, 1)
     for i in range(len(picos)):
-        fig = plt.figure(dpi=200)
+        plt.figure(dpi=200)
         plt.plot(xt, arrays[i][512:])
         peaks = np.array(picos[i]).astype(float).round().astype(int)
         plt.plot(xt[peaks], arrays[i][peaks + 512], "x")

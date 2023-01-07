@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tpc_utils import search_high_res
 import os
+import pytest
 
 
 def load_data(path):
@@ -15,9 +16,7 @@ if __name__ == "__main__":
     raw_signals = load_data(path)
     num = np.random.randint(0, len(raw_signals), size=1)[0]
     raw_signal = raw_signals[num]
-    deconv_tpc, peaks = search_high_res(
-        raw_signal, 5.0, 20.0, False, 700, False, 3
-    )
+    deconv_tpc, peaks = search_high_res(raw_signal, 5.0, 20.0, False, 700, False, 3)
     peaks = peaks.round().astype(int)
     xt = np.arange(0.5, 512, 1)
     fig = plt.figure(dpi=150)
@@ -36,9 +35,7 @@ if __name__ == "__main__":
     plt.show()
     nums = np.random.randint(0, len(raw_signals), size=5)
     raw_signal = raw_signals[nums]
-    deconv_tpc, peaks = search_high_res(
-        raw_signal, 5.0, 20.0, False, 700, False, 3
-    )
+    deconv_tpc, peaks = search_high_res(raw_signal, 5.0, 20.0, False, 700, False, 3)
     for num in range(5):
         peaks_p = peaks[num].round().astype(int)
         fig = plt.figure(dpi=150)
@@ -61,3 +58,27 @@ if __name__ == "__main__":
         )
         plt.legend()
         plt.show()
+
+
+class TestDeconvolution:
+    @pytest.mark.core
+    def test_deconvolution_shape_type(self):
+        path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(path, "..", "data")
+        raw_signals = load_data(path)
+        num = np.random.randint(0, len(raw_signals), size=1)[0]
+        raw_signal = raw_signals[num]
+        deconv_tpc, _ = search_high_res(raw_signal, 5.0, 20.0, False, 700, False, 3)
+        assert deconv_tpc.shape == (512,)
+        assert deconv_tpc.dtype == np.float64
+
+    @pytest.mark.core
+    def test_batch_deconvolution_shape_type(self):
+        path = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(path, "..", "data")
+        raw_signals = load_data(path)
+        num = np.random.randint(0, len(raw_signals), size=5)
+        raw_signal = raw_signals[num]
+        deconv_tpc, _ = search_high_res(raw_signal, 5.0, 20.0, False, 700, False, 3)
+        assert deconv_tpc.shape == (5, 512)
+        assert deconv_tpc.dtype == np.float64

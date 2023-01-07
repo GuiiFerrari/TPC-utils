@@ -22,9 +22,7 @@ if __name__ == "__main__":
     ax1.set_title("pRansac")
     colors = plt.cm.Spectral(np.linspace(0, 1, len(points)))
     # Test pRansac
-    for index, i, v, p in zip(
-        np.arange(len(inliers)), inliers, versors, points
-    ):
+    for index, i, v, p in zip(np.arange(len(inliers)), inliers, versors, points):
         linepts = v * np.mgrid[-800:800:2j][:, np.newaxis]
         linepts += p
         x0, y0, z0, x1, y1, z1 = (
@@ -35,9 +33,7 @@ if __name__ == "__main__":
             linepts[1][1],
             linepts[1][2],
         )
-        ax1.scatter3D(
-            pc[i][:, 0], pc[i][:, 2], pc[i][:, 1], color=colors[index], s=1
-        )
+        ax1.scatter3D(pc[i][:, 0], pc[i][:, 2], pc[i][:, 1], color=colors[index], s=1)
         ax1.plot3D(
             np.array([x0, x1]),
             np.array([z0, z1]),
@@ -65,9 +61,7 @@ if __name__ == "__main__":
             linepts[1][1],
             linepts[1][2],
         )
-        ax1.scatter3D(
-            pc[i][:, 0], pc[i][:, 2], pc[i][:, 1], color=colors[index], s=1
-        )
+        ax1.scatter3D(pc[i][:, 0], pc[i][:, 2], pc[i][:, 1], color=colors[index], s=1)
         ax1.plot3D(
             np.array([x0, x1]),
             np.array([z0, z1]),
